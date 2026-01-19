@@ -22,30 +22,30 @@ export default function Home() {
         allowedFileTypes: [".mp4", ".insv", ".mkv", ".mov"],
       },
     }).use(AwsS3, {
-      // This is the magic bridge to your API route
-      getUploadParameters: async (file) => {
-        const response = await fetch("/api/sign-r2", {
+      getUploadParameters: (file: any) => {
+        return fetch("/api/sign-r2", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             filename: file.name,
             contentType: file.type,
           }),
-        });
-
-        if (!response.ok) throw new Error("Failed to get signed URL");
-
-        const data = await response.json();
-
-        return {
-          method: data.method as "PUT",
-          url: data.url,
-          headers: {
-            "Content-Type": file.type || "application/octet-stream",
-          },
-        };
+        })
+          .then((response) => {
+            if (!response.ok) throw new Error("Failed to get signed URL");
+            return response.json();
+          })
+          .then((data) => {
+            return {
+              method: data.method,
+              url: data.url,
+              headers: {
+                "Content-Type": file.type || "application/octet-stream",
+              },
+            };
+          });
       },
-    })
+    } as any)
   );
 
   return (
