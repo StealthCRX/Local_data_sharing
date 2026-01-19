@@ -11,8 +11,8 @@ import "@uppy/dashboard/dist/style.min.css";
 
 export default function Home() {
   // We use state to ensure Uppy only initializes on the client (browser)
-  const [uppy] = useState(() =>
-    new Uppy({
+  const [uppy] = useState(() => {
+    const u = new Uppy({
       id: "mule-uploader",
       autoProceed: false,
       debug: true,
@@ -21,32 +21,37 @@ export default function Home() {
         maxNumberOfFiles: 50,
         allowedFileTypes: [".mp4", ".insv", ".mkv", ".mov"],
       },
-    }).use(AwsS3, {
-      getUploadParameters: (file: any) => {
-        return fetch("/api/sign-r2", {
+    });
+
+    // @ts-ignore
+    u.use(AwsS3, {
+      shouldUseMultipart: false,
+      getUploadParameters: async (file: any) => {
+        const response = await fetch("/api/sign-r2", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             filename: file.name,
             contentType: file.type,
           }),
-        })
-          .then((response) => {
-            if (!response.ok) throw new Error("Failed to get signed URL");
-            return response.json();
-          })
-          .then((data) => {
-            return {
-              method: data.method,
-              url: data.url,
-              headers: {
-                "Content-Type": file.type || "application/octet-stream",
-              },
-            };
-          });
+        });
+
+        if (!response.ok) throw new Error("Failed to get signed URL");
+
+        const data = await response.json();
+
+        return {
+          method: data.method,
+          url: data.url,
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+          },
+        };
       },
-    } as any)
-  );
+    });
+
+    return u;
+  });
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 p-4 sm:p-24 text-zinc-100">
