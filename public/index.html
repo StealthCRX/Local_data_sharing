@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Data Sharing</title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            font-weight: 400;
+            margin-bottom: 2rem;
+            color: #a3a3a3;
+        }
+        #drop-zone {
+            border: 2px dashed #404040;
+            border-radius: 12px;
+            padding: 4rem 2rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            background: #171717;
+        }
+        #drop-zone.hover {
+            border-color: #3b82f6;
+            background: #1e1e1e;
+        }
+        #file-input {
+            display: none;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        #status-list {
+            margin-top: 2rem;
+            text-align: left;
+            width: 100%;
+            list-style: none;
+            padding: 0;
+        }
+        .status-item {
+            padding: 10px;
+            border-bottom: 1px solid #262626;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .uploading { color: #3b82f6; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Data Ingest Portal</h1>
+
+    <div id="drop-zone">
+        <p style="margin: 0; font-size: 1.1rem; color: #d4d4d4;">Drag & Drop files here</p>
+        <p style="margin: 8px 0 0 0; font-size: 0.9rem; color: #737373;">or click to browse</p>
+    </div>
+    <input type="file" id="file-input" multiple>
+
+    <ul id="status-list"></ul>
+</div>
+
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const statusList = document.getElementById('status-list');
+
+    // Handle Click
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // Handle File Selection
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    // Handle Drag & Drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('hover');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('hover'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('hover');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    function handleFiles(files) {
+        Array.from(files).forEach(uploadFile);
+    }
+
+    async function uploadFile(file) {
+        const li = document.createElement('li');
+        li.className = 'status-item';
+        li.innerHTML = `<span>${file.name}</span> <span class="uploading">Uploading...</span>`;
+        statusList.appendChild(li);
+
+        try {
+            // Upload directly to the Worker using PUT
+            // The worker uses the path as the key, so we construct /filename
+            const encodedName = encodeURIComponent(file.name);
+            const response = await fetch(`/${encodedName}`, {
+                method: 'PUT',
+                body: file
+            });
+
+            if (response.ok) {
+                li.innerHTML = `<span>${file.name}</span> <span class="success">✓ Done</span>`;
+            } else {
+                throw new Error('Upload failed');
+            }
+        } catch (error) {
+            console.error(error);
+            li.innerHTML = `<span>${file.name}</span> <span class="error">✗ Failed</span>`;
+        }
+    }
+</script>
+
+</body>
+</html>
