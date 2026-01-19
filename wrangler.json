@@ -5,16 +5,12 @@
     "compatibility_flags": [
         "nodejs_compat"
     ],
-    "assets": {
-        "directory": "./public",
-        "binding": "ASSETS"
+    "vars": {
+        "R2_ACCOUNT_ID": "348feb93cf83e02dcebca8910abd0dca",
+        "R2_ACCESS_KEY_ID": "1daf9a964a0468d6ddd39ee489fcdf79",
+        "R2_SECRET_ACCESS_KEY": "8c3f82710facab4857f428b46f1a037abf1281c2b500f86901cdd155dc9ee213",
+        "R2_BUCKET_NAME": "localdata"
     },
-    "r2_buckets": [
-        {
-            "binding": "MY_BUCKET",
-            "bucket_name": "localdata"
-        }
-    ],
     "observability": {
         "enabled": true
     }
