@@ -1,0 +1,12 @@
+{
+    "name": "local-data-sharing",
+    "compatibility_date": "2024-09-23",
+    "compatibility_flags": [
+        "nodejs_compat"
+    ],
+    "main": ".vercel/output/static/_worker.js",
+    "assets": {
+        "directory": ".vercel/output/static",
+        "binding": "ASSETS"
+    }
+}
