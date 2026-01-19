@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Data Sharing</title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: 400;
+            margin-bottom: 2rem;
+            color: #a3a3a3;
+        }
+
+        #drop-zone {
+            border: 2px dashed #404040;
+            border-radius: 12px;
+            padding: 4rem 2rem;
+            background: #171717;
+            cursor: pointer;
+        }
+
+        #drop-zone.hover {
+            border-color: #3b82f6;
+            background: #1e1e1e;
+        }
+
+        .status-item {
+            padding: 10px;
+            border-bottom: 1px solid #262626;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: #22c55e;
+        }
+
+        .error {
+            color: #ef4444;
+        }
+
+        .uploading {
+            color: #3b82f6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Data Ingest Portal</h1>
+        <div id="drop-zone">Drag & Drop files here or Click</div>
+        <input type="file" id="file-input" multiple style="display: none;">
+        <div id="status-list"></div>
+    </div>
+    <script>
+        const dz = document.getElementById('drop-zone'), fi = document.getElementById('file-input'), sl = document.getElementById('status-list');
+        dz.onclick = () => fi.click();
+        fi.onchange = e => h(e.target.files);
+        dz.ondragover = e => { e.preventDefault(); dz.classList.add('hover'); };
+        dz.ondragleave = () => dz.classList.remove('hover');
+        dz.ondrop = e => { e.preventDefault(); dz.classList.remove('hover'); h(e.dataTransfer.files); };
+        function h(files) {
+            Array.from(files).forEach(async f => {
+                const el = document.createElement('div'); el.className = 'status-item'; el.innerHTML = `<span>${f.name}</span><span class="uploading">...</span>`; sl.appendChild(el);
+                try {
+                    // Upload to the same path, caught by _worker.js
+                    const res = await fetch('/' + encodeURIComponent(f.name), { method: 'PUT', body: f });
+                    if (!res.ok) throw new Error();
+                    el.innerHTML = `<span>${f.name}</span><span class="success">✓</span>`;
+                } catch { el.innerHTML = `<span>${f.name}</span><span class="error">✗</span>`; }
+            });
+        }
+    </script>
+</body>
+
+</html>
