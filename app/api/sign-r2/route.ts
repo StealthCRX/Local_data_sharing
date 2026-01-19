@@ -8,7 +8,7 @@ export const runtime = 'edge';
 // 2. Configure the R2 Client
 const r2 = new S3Client({
   region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  endpoint: process.env.R2_BUCKET_ENDPOINT,
   credentials: {
     accessKeyId: process.env.R2_ACCESS_KEY_ID || "",
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || "",
@@ -43,8 +43,8 @@ export async function POST(request: Request) {
     // This URL allows the browser to bypass the server and upload straight to R2
     const signedUrl = await getSignedUrl(r2, command, { expiresIn: 3600 });
 
-    return NextResponse.json({ 
-      url: signedUrl, 
+    return NextResponse.json({
+      url: signedUrl,
       method: "PUT",
       fields: {} // Uppy expects this structure
     });
