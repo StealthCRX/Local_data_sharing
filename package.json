@@ -6,6 +6,7 @@
     "deploy": "wrangler deploy"
   },
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.971.0",
     "wrangler": "^3.0.0"
   },
   "dependencies": {
